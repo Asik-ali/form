@@ -4,7 +4,6 @@
     import { collection, doc, getDoc } from 'firebase/firestore';
 
    // ... (previous imports)
-// ... (previous imports)
 
 const ViewDetails = () => {
   const [user, setUser] = useState({});
@@ -42,12 +41,17 @@ const ViewDetails = () => {
         <div className="mb-2">
           <p>Email: {user.email}</p>
         </div>
-        {/* Add the following block to display the photo */}
+        {/* Display the first photo */}
         <div className="mb-2">
-          <p>Photo:</p>
+          <p>Photo 1:</p>
           {user.imageUrl && <img src={user.imageUrl} alt={`${user.name}'s photo`} className="h-32 w-32 rounded-full object-cover" />}
         </div>
-        {/* End of photo block */}
+        {/* Display the second photo */}
+        <div className="mb-2">
+          <p>Photo 2:</p>
+          {user.imageUrl2 && <img src={user.imageUrl2} alt={`${user.name}'s second photo`} className="h-32 w-32 rounded-full object-cover" />}
+        </div>
+        {/* End of photo blocks */}
         <div className="mb-2">
           <p>Contact: {user.phoneNumber}</p>
         </div>

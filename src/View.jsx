@@ -254,6 +254,8 @@ const View = () => {
               <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('name')}>Name</th>
               <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('email')}>Email</th>
               <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('contact')}>Contact</th>
+              <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Image1</th>
+              <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Image2</th>
               <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('createdAt')}>Created At</th>
               <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Action</th>
             </tr>
@@ -265,11 +267,29 @@ const View = () => {
                 <td className="border px-4 py-2 text-center">{data[id].name}</td>
                 <td className="border px-4 py-2 text-center">{data[id].email}</td>
                 <td className="border px-4 py-2 text-center">{data[id].phoneNumber}</td>
-                <td className="border px-4 py-2 text-center">
+                {/* <td className="border px-4 py-2 text-center">
                   {data[id].imageUrl && (
                     <img
                       src={data[id].imageUrl}
-                      alt={`${data[id].name}'s photo`}
+                      alt={`${data[id].name}'s photo 1`}
+                      className="h-12 w-12 rounded-full object-cover"
+                    />
+                  )}
+                </td> */}
+                 <td className="border px-4 py-2 text-center">
+                  {data[id].fileUrls && (
+                    <img
+                      src={data[id].fileUrls[0]}
+                      alt={`${data[id].name}'s photo 2`}
+                      className="h-12 w-12 rounded-full object-cover"
+                    />
+                  )}
+                </td>
+                <td className="border px-4 py-2 text-center">
+                  {data[id].fileUrls && (
+                    <img
+                      src={data[id].fileUrls[1]}
+                      alt={`${data[id].name}'s photo 1`}
                       className="h-12 w-12 rounded-full object-cover"
                     />
                   )}

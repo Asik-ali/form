@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fireDB, storage } from './firebase/Firebase';
 import { doc, getDoc, addDoc, updateDoc, serverTimestamp, collection } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -10,10 +10,11 @@ const Addedit = () => {
     name: '',
     email: '',
     photo: null,
-    phoneNumber: '', // Add a new state variable for the phone number
+    phoneNumber: '',
+    selectedPlan: '590',
+    fileInputs: Array.from({ length: 2 }, (_, i) => `File ${i + 1}`),
   });
-
-  const { name, email, photo, phoneNumber } = state; // Destructure the phone number from the state
+  const [loading, setLoading] = useState(false); // New state for loading indicator
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -29,7 +30,9 @@ const Addedit = () => {
             name: '',
             email: '',
             photo: null,
-            phoneNumber: '', // Initialize the phone number in the state
+            phoneNumber: '',
+            selectedPlan: '590',
+            fileInputs: Array.from({ length: 2 }, (_, i) => `File ${i + 1}`),
           });
         }
       } catch (error) {
@@ -42,24 +45,61 @@ const Addedit = () => {
 
   const handleInput = (e) => {
     const { name, value } = e.target;
-    setState({ ...state, [name]: value });
+    setState((prevState) => ({ ...prevState, [name]: value }));
   };
 
   const handlePhotoChange = (e) => {
     if (e.target.files[0]) {
-      setState({ ...state, photo: e.target.files[0] });
+      setState((prevState) => ({ ...prevState, photo: e.target.files[0] }));
     }
+  };
+
+  const handlePlanChange = (e) => {
+    const { value } = e.target;
+    const numFileInputs = value === '1000' ? 2 : 1;
+    setState((prevState) => ({
+      ...prevState,
+      selectedPlan: value,
+      fileInputs: Array.from({ length: numFileInputs }, (_, i) => `File ${i + 1}`),
+    }));
+  };
+
+  const handleFileInputChange = (index, e) => {
+    const newFileInputs = [...state.fileInputs];
+    newFileInputs[index] = e.target.files[0];
+    setState((prevState) => ({ ...prevState, fileInputs: newFileInputs }));
   };
 
   const uploadPhoto = async () => {
     try {
-      const photoRef = ref(storage, `photos/${photo.name}`);
-      await uploadBytes(photoRef, photo);
-      const photoUrl = await getDownloadURL(photoRef);
-
-      return photoUrl;
+      if (state.photo) {
+        const photoRef = ref(storage, `photos/${state.photo.name}`);
+        await uploadBytes(photoRef, state.photo);
+        return await getDownloadURL(photoRef);
+      } else {
+        return null; // Return null if there is no photo
+      }
     } catch (error) {
       console.error('Error uploading photo:', error);
+      throw error;
+    }
+  };
+
+  const uploadFiles = async () => {
+    try {
+      const fileUrls = await Promise.all(
+        state.fileInputs.map(async (file, index) => {
+          if (file) {
+            const fileRef = ref(storage, `files/${id || 'new'}/file${index + 1}`);
+            await uploadBytes(fileRef, file);
+            return await getDownloadURL(fileRef);
+          }
+          return null;
+        })
+      );
+      return fileUrls;
+    } catch (error) {
+      console.error('Error uploading files:', error);
       throw error;
     }
   };
@@ -67,20 +107,25 @@ const Addedit = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!name || !email || !photo || !phoneNumber) {
-      toast.error('Please fill in all details and upload a photo');
+    if (!state.name || !state.email || !state.phoneNumber || state.fileInputs.some((file) => !file)) {
+      toast.error('Please fill in all details and upload files');
       return;
     }
 
     try {
+      setLoading(true); // Set loading to true during submission
+
       const timestamp = serverTimestamp();
       const photoUrl = await uploadPhoto();
+      const fileUrls = await uploadFiles();
 
       const detailsData = {
-        name,
-        email,
+        name: state.name,
+        email: state.email,
         photoUrl,
-        phoneNumber,
+        phoneNumber: state.phoneNumber,
+        fileUrls,
+        selectedPlan: state.selectedPlan,
         createdAt: timestamp,
       };
 
@@ -94,11 +139,23 @@ const Addedit = () => {
         navigate(`/`);
       }
 
+      // Reset the form state after successful submission
+      setState({
+        name: '',
+        email: '',
+        photo: null,
+        phoneNumber: '',
+        selectedPlan: '590',
+        fileInputs: Array.from({ length: 2 }, (_, i) => `File ${i + 1}`),
+      });
+
       localStorage.setItem('formSubmitted', 'true');
       setTimeout(() => navigate('/'), 500);
     } catch (error) {
       console.error('Error handling details:', error);
       toast.error('Error handling details');
+    } finally {
+      setLoading(false); // Reset loading state after submission
     }
   };
 
@@ -111,7 +168,7 @@ const Addedit = () => {
         <div>
           <input
             type="text"
-            value={name || ""}
+            value={state.name || ''}
             onChange={handleInput}
             name="name"
             className="bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white placeholder:text-gray-200 outline-none"
@@ -121,7 +178,7 @@ const Addedit = () => {
         <div>
           <input
             type="email"
-            value={email || ""}
+            value={state.email || ''}
             onChange={handleInput}
             name="email"
             className="bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white placeholder:text-gray-200 outline-none"
@@ -131,31 +188,54 @@ const Addedit = () => {
         <div>
           <input
             type="text"
-            value={phoneNumber || ""}
+            value={state.phoneNumber || ''}
             onChange={handleInput}
             name="phoneNumber"
             className="bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white placeholder:text-gray-200 outline-none"
             placeholder="Enter Your Phone Number"
           />
         </div>
+
         <div>
-          <input
-            type="file"
-            onChange={handlePhotoChange}
-            accept="image/*"
-            className="bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] text-white outline-none"
-          />
+          <label className="text-white">Select Plan:</label>
+          <select
+            name="selectedPlan"
+            value={state.selectedPlan}
+            onChange={handlePlanChange}
+            className="bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white outline-none"
+          >
+            <option value="590">590 Plan</option>
+            <option value="1000">1000 Plan</option>
+          </select>
         </div>
+
+        {/* Display file input fields */}
+        {state.fileInputs.map((fileInput, index) => (
+          <div key={index}>
+            <label className="text-white">{`File ${index + 1}:`}</label>
+            <input
+              type="file"
+              onChange={(e) => handleFileInputChange(index, e)}
+              className="bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] text-white outline-none"
+            />
+          </div>
+        ))}
 
         <div className="text-center">
           <button
             type="submit"
             onClick={handleSubmit}
             className="bg-blue-500 text-white p-2 rounded-md cursor-pointer"
+            disabled={loading} // Disable the button during submission
           >
-            {id ? 'Update' : 'Save'}
+            {loading ? 'Submitting...' : id ? 'Update' : 'Save'}
           </button>
         </div>
+        <Link to={`/login`}>
+          <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded mr-2 transform transition-transform hover:scale-110">
+            Login
+          </button>
+        </Link>
       </div>
     </div>
   );

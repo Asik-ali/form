@@ -25,7 +25,7 @@ const Login = () => {
       });
       // Simulate storing user information
       localStorage.setItem('user', JSON.stringify({ email }));
-      navigate('/');
+      navigate('/view');
     } catch (error) {
       console.error(error);
       toast.error('Login failed. Please check your credentials.', {
@@ -38,6 +38,8 @@ const Login = () => {
         progress: undefined,
         theme: 'colored',
       });
+      navigate('/');
+
     }
   };
 
