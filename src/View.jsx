@@ -181,8 +181,8 @@ const View = () => {
         className="mb-4"
       >
         <option value="filter">Filter</option>
-        <option value="name">Name</option>
-        <option value="email">Email</option>
+        <option value="name">UserName</option>
+        {/* <option value="email">Email</option> */}
         <option value="createdAt">Created At</option>
       </select>
       <button
@@ -202,8 +202,8 @@ const View = () => {
             <thead>
               <tr className="bg-gray-800 text-white">
                 <th className="border px-4 py-2 text-center sm:w-1/12 md:w-1/12 lg:w-1/12 xl:w-1/12">S.no</th>
-                <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('name')}>Name</th>
-                <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('email')}>Email</th>
+                <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('name')}>UserName</th>
+                {/* <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('email')}>Email</th> */}
                 <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Plan</th>
                 <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Contact</th>
                 <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Image 1</th>
@@ -217,7 +217,7 @@ const View = () => {
                 <tr key={row.id} className={index % 2 === 0 ? 'bg-gray-200' : 'bg-white'}>
                   <td className="border px-4 py-2 text-center">{index + 1}</td>
                   <td className="border px-4 py-2 text-center">{row.name}</td>
-                  <td className="border px-4 py-2 text-center">{row.email}</td>
+                  {/* <td className="border px-4 py-2 text-center">{row.email}</td> */}
                   <td className="border px-4 py-2 text-center">{row.selectedPlan}</td>
                   <td className="border px-4 py-2 text-center">{row.phoneNumber}</td>
                   <td className="border px-4 py-2 text-center">

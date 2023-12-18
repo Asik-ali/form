@@ -35,6 +35,13 @@ const ViewDetails = () => {
     setShowModal(true);
   };
 
+  const openWhatsApp = () => {
+    const phoneNumber = encodeURIComponent(user.phoneNumber);
+    const whatsappUrl = `https://wa.me/${phoneNumber}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+
   return (
     <div className="flex justify-center items-center h-screen">
       <div className="bg-gray-800 px-10 py-10 rounded-xl text-white">
@@ -44,9 +51,9 @@ const ViewDetails = () => {
         <div className="mb-2">
           <p>Name: {user.name}</p>
         </div>
-        <div className="mb-2">
+        {/* <div className="mb-2">
           <p>Email: {user.email}</p>
-        </div>
+        </div> */}
         {/* Display the first photo */}
         <div className="mb-2">
           <p>Photo 1:</p>
@@ -75,7 +82,19 @@ const ViewDetails = () => {
         <div className="mb-2">
           <p>Contact: {user.phoneNumber}</p>
         </div>
+        <div className="mb-2">
+          <p>plan: {user.selectedPlan}</p>
+        </div>
 
+
+        <div className="mt-4 text-center">
+          <button
+            onClick={openWhatsApp}
+            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-transform transform hover:scale-110"
+          >
+            Open WhatsApp
+          </button>
+        </div>
         {/* Add more details as needed */}
 
         {/* Back button to Home */}

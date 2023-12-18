@@ -8,13 +8,12 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 const Addedit = () => {
   const [state, setState] = useState({
     name: '',
-    email: '',
     photo: null,
     phoneNumber: '',
     selectedPlan: 'plan',
     fileInputs: Array.from({ length: 2 }, (_, i) => `File ${i + 1}`),
   });
-  const [loading, setLoading] = useState(false); // New state for loading indicator
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -28,7 +27,6 @@ const Addedit = () => {
         } else {
           setState({
             name: '',
-            email: '',
             photo: null,
             phoneNumber: '',
             selectedPlan: '590',
@@ -77,7 +75,7 @@ const Addedit = () => {
         await uploadBytes(photoRef, state.photo);
         return await getDownloadURL(photoRef);
       } else {
-        return null; // Return null if there is no photo
+        return null;
       }
     } catch (error) {
       console.error('Error uploading photo:', error);
@@ -103,38 +101,37 @@ const Addedit = () => {
       throw error;
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const requiredFiles = state.selectedPlan === '1000' ? 2 : 1;
-  
+
     if (
       !state.name ||
-      !state.email ||
       !state.phoneNumber ||
       state.fileInputs.slice(0, requiredFiles).some((file) => !file)
     ) {
       toast.error('Please fill in all details and upload required files');
       return;
     }
-  
+
     try {
       setLoading(true);
-  
+
       const timestamp = serverTimestamp();
       const photoUrl = await uploadPhoto();
       const fileUrls = await uploadFiles();
-  
+
       const detailsData = {
         name: state.name,
-        email: state.email,
         photoUrl,
         phoneNumber: state.phoneNumber,
         fileUrls,
-        selectedPlan: state.selectedPlan, // Include selected plan in detailsData
+        selectedPlan: state.selectedPlan,
         createdAt: timestamp,
       };
-  
+
       if (id) {
         const detailsDocRef = doc(fireDB, 'Details', id);
         await updateDoc(detailsDocRef, detailsData);
@@ -144,16 +141,15 @@ const Addedit = () => {
         toast.success('Details Submitted Successfully');
         navigate(`/`);
       }
-  
+
       setState({
         name: '',
-        email: '',
         photo: null,
         phoneNumber: '',
         selectedPlan: 'plan',
         fileInputs: Array.from({ length: 2 }, (_, i) => `File ${i + 1}`),
       });
-  
+
       localStorage.setItem('formSubmitted', 'true');
       setTimeout(() => navigate('/'), 500);
     } catch (error) {
@@ -163,10 +159,9 @@ const Addedit = () => {
       setLoading(false);
     }
   };
-  
-  
+
   return (
-    <div className="flex justify-center items-center h-screen mt-32">
+    <div className="flex justify-center items-center h-screen mt-16 lg:mt-32">
       <div className="bg-gray-800 px-10 py-10 rounded-xl">
         <div className="">
           <h1 className="text-center text-white text-xl mb-4 font-bold">Add Details</h1>
@@ -178,17 +173,7 @@ const Addedit = () => {
             onChange={handleInput}
             name="name"
             className="bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white placeholder:text-gray-200 outline-none"
-            placeholder="Enter Your Name"
-          />
-        </div>
-        <div>
-          <input
-            type="email"
-            value={state.email || ''}
-            onChange={handleInput}
-            name="email"
-            className="bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white placeholder:text-gray-200 outline-none"
-            placeholder="Enter Your Email"
+            placeholder="Enter Your Username"
           />
         </div>
         <div>
@@ -216,7 +201,6 @@ const Addedit = () => {
           </select>
         </div>
 
-        {/* Display file input fields */}
         {state.fileInputs.map((fileInput, index) => (
           <div key={index}>
             <label className="text-white">{`File ${index + 1}:`}</label>
@@ -233,7 +217,7 @@ const Addedit = () => {
             type="submit"
             onClick={handleSubmit}
             className="bg-blue-500 text-white p-2 rounded-md cursor-pointer"
-            disabled={loading} // Disable the button during submission
+            disabled={loading}
           >
             {loading ? 'Submitting...' : id ? 'Update' : 'Save'}
           </button>
