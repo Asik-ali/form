@@ -99,22 +99,38 @@ const View = () => {
       sortedColumn === columnName && sortOrder === 'asc' ? 'desc' : 'asc';
     setSortedColumn(columnName);
     setSortOrder(order);
-
+  
     const sortedData = Object.keys(data).sort((a, b) => {
-      const valueA = data[a][columnName]?.toLowerCase() || '';
-      const valueB = data[b][columnName]?.toLowerCase() || '';
-
-      return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+      let valueA, valueB;
+  
+      if (columnName === 'createdAt') {
+        // Parse dates for createdAt column
+        valueA = new Date(data[a][columnName]) || 0;
+        valueB = new Date(data[b][columnName]) || 0;
+      } else {
+        // For other columns, use lowercase strings
+        valueA = (data[a][columnName] || '').toLowerCase();
+        valueB = (data[b][columnName] || '').toLowerCase();
+      }
+  
+      if (valueA < valueB) {
+        return order === 'asc' ? -1 : 1;
+      } else if (valueA > valueB) {
+        return order === 'asc' ? 1 : -1;
+      }
+  
+      return 0;
     });
-
+  
     const newData = {};
     sortedData.forEach((key) => {
       newData[key] = data[key];
     });
-
+  
     setData(newData);
     setFilteredData(Object.keys(newData));
   };
+  
 
   const handleSortOptionChange = (event) => {
     const selectedOption = event.target.value;
@@ -210,16 +226,16 @@ const View = () => {
 
   return (
     <div className="p-4">
-      <label htmlFor="sortDropdown" className="mr-2">
+       <label htmlFor="sortDropdown" className="mr-2">
         Sort by:
       </label>
       <select id="sortDropdown" value={selectedSortOption} onChange={handleSortOptionChange} className="mb-4">
         <option value="filter">Filter</option>
         <option value="name">Name</option>
-        <option value="rollno">Roll No</option>
-        <option value="dob">DOB</option>
+        <option value="email">Email</option>
+        {/* <option value="contact">Contact</option> */}
+        <option value="createdAt">Created At</option> 
       </select>
-
       <button onClick={handleLogout} className="bg-red-500 ms-5 hover:bg-red-700 text-white font-bold py-1 px-2 rounded transform transition-transform hover:scale-110">
         Logout
       </button>
@@ -267,16 +283,7 @@ const View = () => {
                 <td className="border px-4 py-2 text-center">{data[id].name}</td>
                 <td className="border px-4 py-2 text-center">{data[id].email}</td>
                 <td className="border px-4 py-2 text-center">{data[id].phoneNumber}</td>
-                {/* <td className="border px-4 py-2 text-center">
-                  {data[id].imageUrl && (
-                    <img
-                      src={data[id].imageUrl}
-                      alt={`${data[id].name}'s photo 1`}
-                      className="h-12 w-12 rounded-full object-cover"
-                    />
-                  )}
-                </td> */}
-                 <td className="border px-4 py-2 text-center">
+                <td className="border px-4 py-2 text-center">
                   {data[id].fileUrls && (
                     <img
                       src={data[id].fileUrls[0]}
@@ -329,8 +336,6 @@ const View = () => {
           <ViewDetails id={selectedUserId} />
         )}
       />
-
-    
     </div>
   );
 };

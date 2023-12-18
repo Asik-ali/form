@@ -11,7 +11,7 @@ const Addedit = () => {
     email: '',
     photo: null,
     phoneNumber: '',
-    selectedPlan: '590',
+    selectedPlan: 'plan',
     fileInputs: Array.from({ length: 2 }, (_, i) => `File ${i + 1}`),
   });
   const [loading, setLoading] = useState(false); // New state for loading indicator
@@ -145,7 +145,7 @@ const Addedit = () => {
         email: '',
         photo: null,
         phoneNumber: '',
-        selectedPlan: '590',
+        selectedPlan: 'plan',
         fileInputs: Array.from({ length: 2 }, (_, i) => `File ${i + 1}`),
       });
 
@@ -204,6 +204,7 @@ const Addedit = () => {
             onChange={handlePlanChange}
             className="bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white outline-none"
           >
+            <option value="">Plan</option>
             <option value="590">590 Plan</option>
             <option value="1000">1000 Plan</option>
           </select>
