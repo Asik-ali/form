@@ -106,29 +106,29 @@ const Addedit = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!state.name || !state.email || !state.phoneNumber || state.fileInputs.some((file) => !file)) {
       toast.error('Please fill in all details and upload files');
       return;
     }
-
+  
     try {
-      setLoading(true); // Set loading to true during submission
-
+      setLoading(true);
+  
       const timestamp = serverTimestamp();
       const photoUrl = await uploadPhoto();
       const fileUrls = await uploadFiles();
-
+  
       const detailsData = {
         name: state.name,
         email: state.email,
         photoUrl,
         phoneNumber: state.phoneNumber,
         fileUrls,
-        selectedPlan: state.selectedPlan,
+        selectedPlan: state.selectedPlan, // Include selected plan in detailsData
         createdAt: timestamp,
       };
-
+  
       if (id) {
         const detailsDocRef = doc(fireDB, 'Details', id);
         await updateDoc(detailsDocRef, detailsData);
@@ -138,8 +138,7 @@ const Addedit = () => {
         toast.success('Details Submitted Successfully');
         navigate(`/`);
       }
-
-      // Reset the form state after successful submission
+  
       setState({
         name: '',
         email: '',
@@ -148,17 +147,17 @@ const Addedit = () => {
         selectedPlan: 'plan',
         fileInputs: Array.from({ length: 2 }, (_, i) => `File ${i + 1}`),
       });
-
+  
       localStorage.setItem('formSubmitted', 'true');
       setTimeout(() => navigate('/'), 500);
     } catch (error) {
       console.error('Error handling details:', error);
       toast.error('Error handling details');
     } finally {
-      setLoading(false); // Reset loading state after submission
+      setLoading(false);
     }
   };
-
+  
   return (
     <div className="flex justify-center items-center h-screen mt-32">
       <div className="bg-gray-800 px-10 py-10 rounded-xl">
