@@ -10,6 +10,8 @@ import { toast } from 'react-toastify';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import DatePicker from 'react-datepicker';  // Import the date picker library
+import 'react-datepicker/dist/react-datepicker.css';  // Import the date picker styles
 
 import Modal from './Modal';
 import ViewDetails from './ViewDetails';
@@ -21,6 +23,7 @@ const View = () => {
   const [sortOrder, setSortOrder] = useState('asc');
   const [selectedSortOption, setSelectedSortOption] = useState('filter');
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);  // New state for selected date
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem('user'));
@@ -59,6 +62,17 @@ const View = () => {
       return 0;
     });
   }, [data, sortedColumn, sortOrder]);
+
+  const filteredData = useMemo(() => {
+    if (!selectedDate) {
+      return sortedData;
+    }
+
+    return sortedData.filter((item) => {
+      const itemDate = new Date(item.createdAt);
+      return itemDate.toDateString() === selectedDate.toDateString();
+    });
+  }, [selectedDate, sortedData]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -168,6 +182,10 @@ const View = () => {
     doc.save('user_data.pdf');
     toast.success('PDF Exported Successfully!');
   };
+  const handleDateChange = (date) => {
+    // Handle date change logic here if needed
+    setSelectedDate(date);
+  };
 
   return (
     <div className="p-4">
@@ -182,9 +200,31 @@ const View = () => {
       >
         <option value="filter">Filter</option>
         <option value="name">UserName</option>
-        {/* <option value="email">Email</option> */}
         <option value="createdAt">Created At</option>
       </select>
+
+      {/* Date Picker for filtering */}
+      <div className="mb-4">
+        <label htmlFor="datePicker" className="mr-2 ">
+          Select Date:
+        </label>
+        <DatePicker
+  selected={selectedDate}
+  onChange={handleDateChange}
+  dateFormat="yyyy-MM-dd"
+  placeholderText='yyyy-MM-dd'
+  className="mb-4 border-2 border-black"
+  style={{
+    width: '100%',
+    padding: '0.5rem',
+    fontSize: '1rem',
+    backgroundColor: 'black', // Set the background color
+    // Add more styles as needed
+  }}
+/>
+
+      </div>
+
       <button
         onClick={handleLogout}
         className="bg-red-500 ms-5 hover:bg-red-700 text-white font-bold py-1 px-2 rounded transform transition-transform hover:scale-110"
@@ -203,7 +243,6 @@ const View = () => {
               <tr className="bg-gray-800 text-white">
                 <th className="border px-4 py-2 text-center sm:w-1/12 md:w-1/12 lg:w-1/12 xl:w-1/12">S.no</th>
                 <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('name')}>UserName</th>
-                {/* <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('email')}>Email</th> */}
                 <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Plan</th>
                 <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Contact</th>
                 <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Image 1</th>
@@ -213,34 +252,30 @@ const View = () => {
               </tr>
             </thead>
             <tbody>
-              {sortedData.map((row, index) => (
+              {filteredData.map((row, index) => (
                 <tr key={row.id} className={index % 2 === 0 ? 'bg-gray-200' : 'bg-white'}>
                   <td className="border px-4 py-2 text-center">{index + 1}</td>
                   <td className="border px-4 py-2 text-center">{row.name}</td>
-                  {/* <td className="border px-4 py-2 text-center">{row.email}</td> */}
                   <td className="border px-4 py-2 text-center">{row.selectedPlan}</td>
                   <td className="border px-4 py-2 text-center">{row.phoneNumber}</td>
                   <td className="border px-4 py-2 text-center">
-  {console.log('Photo 1 URL:', row.fileUrls && row.fileUrls[0])}
-  {row.fileUrls && row.fileUrls[0] && (
-    <img
-      src={row.fileUrls[0]}
-      alt={`${row.name}'s photo 1`}
-      className="h-12 w-12 rounded-full object-cover"
-    />
-  )}
-</td>
-<td className="border px-4 py-2 text-center">
-  {console.log('Photo 2 URL:', row.fileUrls && row.fileUrls[1])}
-  {row.fileUrls && row.fileUrls[1] && (
-    <img
-      src={row.fileUrls[1]}
-      alt={`${row.name}'s photo 2`} 
-      className="h-12 w-12 rounded-full object-cover"
-    />
-  )}
-</td>
-
+                    {row.fileUrls && row.fileUrls[0] && (
+                      <img
+                        src={row.fileUrls[0]}
+                        alt={`${row.name}'s photo 1`}
+                        className="h-12 w-12 rounded-full object-cover"
+                      />
+                    )}
+                  </td>
+                  <td className="border px-4 py-2 text-center">
+                    {row.fileUrls && row.fileUrls[1] && (
+                      <img
+                        src={row.fileUrls[1]}
+                        alt={`${row.name}'s photo 2`}
+                        className="h-12 w-12 rounded-full object-cover"
+                      />
+                    )}
+                  </td>
                   <td className="border px-4 py-2 text-center">{row.createdAt?.toLocaleString()}</td>
                   <td className="border px-4 py-2 text-center">
                     <Link to={`/fix/${row.id}`}>
