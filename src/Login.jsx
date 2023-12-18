@@ -1,31 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-// Remove Firebase imports
 
 const Login = () => {
-  const [email, setEmail] = useState('default@example.com'); // Set default email
-  const [password, setPassword] = useState('defaultpassword'); // Set default password
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const login = async () => {
-    // Remove Firebase authentication logic for simplicity
+  useEffect(() => {
+    // Set the initial email value when the component mounts
+    setEmail('');
+    setPassword('')
+  }, []);
 
+  const login = async () => {
     try {
       // Simulate login success
-      toast.success('Login successful', {
-        position: 'top-right',
-        autoClose: 2000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: 'colored',
-      });
-      // Simulate storing user information
-      localStorage.setItem('user', JSON.stringify({ email }));
-      navigate('/view');
+      if (email === 'Admin@gmail.com' && password === '12345') {
+        toast.success('Login successful', {
+          position: 'top-right',
+          autoClose: 2000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'colored',
+        });
+
+        // Simulate storing user information
+        localStorage.setItem('user', JSON.stringify({ email }));
+        navigate('/view');
+      } else {
+        // Simulate login failure
+        throw new Error('Invalid credentials');
+      }
     } catch (error) {
       console.error(error);
       toast.error('Login failed. Please check your credentials.', {
@@ -39,7 +48,6 @@ const Login = () => {
         theme: 'colored',
       });
       navigate('/');
-
     }
   };
 
@@ -56,9 +64,8 @@ const Login = () => {
             <div>
               <input
                 type="email"
-                // value={email}
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                name="email"
                 className="bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white placeholder:text-gray-200 outline-none"
                 placeholder="Email"
               />
@@ -66,7 +73,7 @@ const Login = () => {
             <div>
               <input
                 type="password"
-                // value={password}
+                value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white placeholder:text-gray-200 outline-none"
                 placeholder="Password"
