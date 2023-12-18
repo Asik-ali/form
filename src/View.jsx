@@ -330,13 +330,7 @@ const View = () => {
         )}
       />
 
-      <div className="flex justify-center items-center mt-5">
-        <Link to={`/add`}>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded transform transition-transform hover:scale-110">
-            Add
-          </button>
-        </Link>
-      </div>
+    
     </div>
   );
 };
