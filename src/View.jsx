@@ -16,6 +16,7 @@ import ViewDetails from './ViewDetails';
 
 const View = () => {
   const [data, setData] = useState({});
+  const [loading, setLoading] = useState(true);
   const [sortedColumn, setSortedColumn] = useState(null);
   const [sortOrder, setSortOrder] = useState('asc');
   const [selectedSortOption, setSelectedSortOption] = useState('filter');
@@ -24,6 +25,13 @@ const View = () => {
 
   const user = JSON.parse(localStorage.getItem('user'));
   const { id } = useParams();
+
+  const columnMappings = {
+    filter: 'filter', // Adjust this mapping based on your actual column names
+    name: 'name',
+    email: 'email',
+    createdAt: 'createdAt',
+  };
 
   const sortedData = useMemo(() => {
     const dataArray = Object.keys(data).map((key) => ({
@@ -72,6 +80,8 @@ const View = () => {
         setData(newData);
       } catch (error) {
         console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -79,7 +89,7 @@ const View = () => {
 
     sessionStorage.setItem('user', JSON.stringify(user));
 
-    const handleBeforeUnload = (event) => {
+    const handleBeforeUnload = () => {
       sessionStorage.removeItem('user');
     };
 
@@ -106,10 +116,6 @@ const View = () => {
           progress: undefined,
           theme: 'colored',
         });
-
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
       }
     } catch (error) {
       toast.error('Failed to delete user. Please try again.');
@@ -124,7 +130,8 @@ const View = () => {
   const handleSortOptionChange = (event) => {
     const selectedOption = event.target.value;
     setSelectedSortOption(selectedOption);
-    handleSort(selectedOption);
+    const columnName = columnMappings[selectedOption];
+    handleSort(columnName);
   };
 
   const handleLogout = () => {
@@ -143,6 +150,7 @@ const View = () => {
           'S.no',
           'Name',
           'Email',
+          'Plan',
           'Contact',
           'CreatedAt',
         ],
@@ -151,6 +159,7 @@ const View = () => {
         index + 1,
         row.name,
         row.email,
+        row.selectedPlan,
         row.phoneNumber,
         row.createdAt?.toLocaleString(),
       ]),
@@ -162,81 +171,96 @@ const View = () => {
 
   return (
     <div className="p-4">
-       <label htmlFor="sortDropdown" className="mr-2">
+      <label htmlFor="sortDropdown" className="mr-2">
         Sort by:
       </label>
-      <select id="sortDropdown" value={selectedSortOption} onChange={handleSortOptionChange} className="mb-4">
+      <select
+        id="sortDropdown"
+        value={selectedSortOption}
+        onChange={handleSortOptionChange}
+        className="mb-4"
+      >
         <option value="filter">Filter</option>
         <option value="name">Name</option>
         <option value="email">Email</option>
-        <option value="createdAt">Created At</option> 
+        <option value="createdAt">Created At</option>
       </select>
-      <button onClick={handleLogout} className="bg-red-500 ms-5 hover:bg-red-700 text-white font-bold py-1 px-2 rounded transform transition-transform hover:scale-110">
+      <button
+        onClick={handleLogout}
+        className="bg-red-500 ms-5 hover:bg-red-700 text-white font-bold py-1 px-2 rounded transform transition-transform hover:scale-110"
+      >
         Logout
       </button>
 
       <p className="mt-4">Total Entries: {totalEntries}</p>
 
-      <div className='overflow-x-auto'>
-        <table className="table-auto w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-800 text-white">
-              <th className="border px-4 py-2 text-center sm:w-1/12 md:w-1/12 lg:w-1/12 xl:w-1/12">S.no</th>
-              <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('name')}>Name</th>
-              <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('email')}>Email</th>
-              <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" >Plan</th>
-              <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Contact</th>
-              <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Image 1</th>
-              <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Image 2</th>
-              <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('createdAt')}>Created At</th>
-              <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedData.map((row, index) => (
-              <tr key={row.id} className={index % 2 === 0 ? 'bg-gray-200' : 'bg-white'}>
-                <td className="border px-4 py-2 text-center">{index + 1}</td>
-                <td className="border px-4 py-2 text-center">{row.name}</td>
-                <td className="border px-4 py-2 text-center">{row.email}</td>
-                <td className="border px-4 py-2 text-center">{row.selectedPlan}</td>
-                <td className="border px-4 py-2 text-center">{row.phoneNumber}</td>
-                <td className="border px-4 py-2 text-center">
-                  {row.fileUrls && row.fileUrls[0] && (
-                    <img
-                      src={row.fileUrls[0]}
-                      alt={`${row.name}'s photo 1`}
-                      className="h-12 w-12 rounded-full object-cover"
-                    />
-                  )}
-                </td>
-                <td className="border px-4 py-2 text-center">
-                  {row.fileUrls && row.fileUrls[1] && (
-                    <img
-                      src={row.fileUrls[1]}
-                      alt={`${row.name}'s photo 1`}
-                      className="h-12 w-12 rounded-full object-cover"
-                    />
-                  )}
-                </td>
-                <td className="border px-4 py-2 text-center">{row.createdAt?.toLocaleString()}</td>
-                <td className="border px-4 py-2 text-center">
-                  <Link to={`/fix/${row.id}`}>
-                    <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded mr-2 transform transition-transform hover:scale-110">
-                      View
-                    </button>
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(row.id)}
-                    className="bg-red-500 hover:bg-red-700 ms-2 text-white font-bold py-1 px-2 rounded transform transition-transform hover:scale-110"
-                  >
-                    Delete
-                  </button>
-                </td>
+      {loading ? (
+        <p>Loading data...</p>
+      ) : (
+        <div className='overflow-x-auto'>
+          <table className="table-auto w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-800 text-white">
+                <th className="border px-4 py-2 text-center sm:w-1/12 md:w-1/12 lg:w-1/12 xl:w-1/12">S.no</th>
+                <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('name')}>Name</th>
+                <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('email')}>Email</th>
+                <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Plan</th>
+                <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Contact</th>
+                <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Image 1</th>
+                <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Image 2</th>
+                <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6" onClick={() => handleSort('createdAt')}>Created At</th>
+                <th className="border px-4 py-2 text-center sm:w-1/6 md:w-1/6 lg:w-1/6 xl:w-1/6">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {sortedData.map((row, index) => (
+                <tr key={row.id} className={index % 2 === 0 ? 'bg-gray-200' : 'bg-white'}>
+                  <td className="border px-4 py-2 text-center">{index + 1}</td>
+                  <td className="border px-4 py-2 text-center">{row.name}</td>
+                  <td className="border px-4 py-2 text-center">{row.email}</td>
+                  <td className="border px-4 py-2 text-center">{row.selectedPlan}</td>
+                  <td className="border px-4 py-2 text-center">{row.phoneNumber}</td>
+                  <td className="border px-4 py-2 text-center">
+  {console.log('Photo 1 URL:', row.fileUrls && row.fileUrls[0])}
+  {row.fileUrls && row.fileUrls[0] && (
+    <img
+      src={row.fileUrls[0]}
+      alt={`${row.name}'s photo 1`}
+      className="h-12 w-12 rounded-full object-cover"
+    />
+  )}
+</td>
+<td className="border px-4 py-2 text-center">
+  {console.log('Photo 2 URL:', row.fileUrls && row.fileUrls[1])}
+  {row.fileUrls && row.fileUrls[1] && (
+    <img
+      src={row.fileUrls[1]}
+      alt={`${row.name}'s photo 2`} 
+      className="h-12 w-12 rounded-full object-cover"
+    />
+  )}
+</td>
+
+                  <td className="border px-4 py-2 text-center">{row.createdAt?.toLocaleString()}</td>
+                  <td className="border px-4 py-2 text-center">
+                    <Link to={`/fix/${row.id}`}>
+                      <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded mr-2 transform transition-transform hover:scale-110">
+                        View
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(row.id)}
+                      className="bg-red-500 hover:bg-red-700 ms-2 text-white font-bold py-1 px-2 rounded transform transition-transform hover:scale-110"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <div className="flex justify-end mb-2 mt-5 ">
         <button onClick={handleExportPDF} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded transform transition-transform hover:scale-110 ml-2">

@@ -103,12 +103,18 @@ const Addedit = () => {
       throw error;
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    if (!state.name || !state.email || !state.phoneNumber || state.fileInputs.some((file) => !file)) {
-      toast.error('Please fill in all details and upload files');
+    const requiredFiles = state.selectedPlan === '1000' ? 2 : 1;
+  
+    if (
+      !state.name ||
+      !state.email ||
+      !state.phoneNumber ||
+      state.fileInputs.slice(0, requiredFiles).some((file) => !file)
+    ) {
+      toast.error('Please fill in all details and upload required files');
       return;
     }
   
@@ -157,6 +163,7 @@ const Addedit = () => {
       setLoading(false);
     }
   };
+  
   
   return (
     <div className="flex justify-center items-center h-screen mt-32">
